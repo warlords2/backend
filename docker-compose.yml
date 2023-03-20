@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  app:
+    env_file: .env
+    networks:
+        - back_net
+	- bridge_net
+  memcached:
+    image: memcached:alpine
+    restart: always
+    env_file: .env
+    networks:
+        - back_net
+#    ports:
+#      - "11211:11211"
