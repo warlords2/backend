@@ -1,22 +1,13 @@
 
-import memory_cache from "./cache/node-cache.js";
-import heavy_cache from "./cache/memcached.js";
-import Optional from "optional-js";
-import { isAnyArrayBuffer } from "util/types";
+let memory_cache = require("./cache/node_cache.js");
+let heavy_cache = require("./cache/memcached.js");
+let Optional = require("optional-js");
 
 
-declare module globalThis {
-    let cache: ICache;
-}
-interface ICache {
-    lazy:any;
-    heavy:any;
-}
-
-export default class ManagerCache{
+class ManagerCache{
     
-    lazy:any;
-    heavy:any;
+    lazy;
+    heavy;
 
     constructor(){
         
@@ -64,6 +55,6 @@ export default class ManagerCache{
 
 }
 
-
+module.exports = ManagerCache
 
 // Eu quero retornar 2 objectos de cache um para local dentro do node e outro para o memcache

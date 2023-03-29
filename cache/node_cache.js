@@ -1,5 +1,5 @@
 
-import NodeCache from "node-cache";
+const NodeCache = require("node-cache");
 
 
 const MAX_TIME_TO_LIVE = 60 * 15;// 15m => 60 *15
@@ -11,7 +11,8 @@ const config_memory_cache = { stdTTL: MAX_TIME_TO_LIVE , // tempo geral para a e
                               useClones: false // melhor desempenho, sem cone {... obj }
                            };
 
-export default function(){
+
+module.exports = function(){
    const memory_cache = new NodeCache(config_memory_cache);
    return memory_cache;
 }

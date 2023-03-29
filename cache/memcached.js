@@ -1,4 +1,4 @@
-import memjs from "memjs";
+const memjs = require("memjs");
 
 
 /*
@@ -15,7 +15,8 @@ const config_heavy_cache = {
 */
 
 
-export default function(){
+
+module.exports = function(){
     var heavy_cache = memjs.Client.create();
     return heavy_cache;
     /*var heavy_cache = new Memcached([host], config_heavy_cache);
