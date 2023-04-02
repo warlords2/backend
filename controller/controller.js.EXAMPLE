@@ -1,0 +1,42 @@
+module.exports = (router) => {
+	
+	router.post('/hellow',async (res,req)=>{
+
+		console.log(req.getHeader());
+		/** Returns the parsed parameter at index. Corresponds to route. */
+		console.log(req.getParameter());
+		/** Returns the URL including initial /slash */
+		console.log(req.getUrl());
+		/** Returns the lowercased HTTP method, useful for "any" routes. */
+		console.log(req.getMethod());
+		/** Returns the HTTP method as-is. */
+		console.log(req.getCaseSensitiveMethod());
+		/** Returns the raw querystring (the part of URL after ? sign) or empty string. */
+		console.log(req.getQuery());
+		/** Returns a decoded query parameter value or empty string. */
+		console.log(req.getQuery());
+		console.log("foreach: ")
+		/** Loops over all headers. */
+		req.forEach((key, value) => {
+
+			console.log("\tkey: "+key)
+			console.log("\tvalue: "+value)
+		});
+
+		// auth verify and get payload JWT
+		let payload =  await req.authenticad();
+		console.log(payload);
+		if( payload ) {
+			console.log("Usuario autehnticado!");
+			
+		};
+        // Content
+		console.log(await req.readJson());
+
+		/** Setting yield to true is to say that this route handler did not handle the route, causing the router to continue looking for a matching route handler, or fail.
+		req.setYield(yield: boolean) : HttpRequest;*/
+		
+		res.status('200').json({"dd":2323})
+
+	});
+}

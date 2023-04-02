@@ -26,6 +26,7 @@ let StarServer = async () => {
 
   }).any('/*', async (res, req) => {
     
+    // RES 
     res.json = (json) => {
       res.writeHeader('content-type', 'text/json')
       res.end(JSON.stringify(json));
@@ -37,11 +38,36 @@ let StarServer = async () => {
     res.status = (status) => {
       return res.writeStatus(status);
     }
+
+    // REQ
+    req.readJson = () => {
+      return readJson(res);
+    }
+    req.authenticad = async () => {
+
+      let jwt = (req.header['authorization']+"").trim().split(" ")[1];
+      
+      if( jwt.length < 1 ) return false;
+      
+      let is_valid = await globalThis.manager_token.valid(jwt);
+
+      if( !is_valid ) return false;
+     
+      return await globalThis.manager_token.getDataFromToken(jwt)
+
+    }
+
+    req.header = {};
+    req.forEach(async (key, value) => {
+      req.header[key] = value;
+    });
+    
     let func = listRoutes[req.getMethod()][req.getUrl()];
     
     try {
       return await func(res, req);
     } catch (error) {
+      console.error(error);
       if(typeof func == 'undefined')return res.writeStatus('404').end('NotFound');
       else return res.writeStatus('500').end('Internal Server Error');
     }
@@ -60,27 +86,55 @@ let StarServer = async () => {
 
   // order method(size group 4) --> path(size group 0...)
   let router = {
-    "get":( path, func )=>{
-      if( typeof func == 'function' )listRoutes["get"][path] = func;
+    "get":( paths, func )=>{
+      if( typeof func == 'function' ){
+        if( typeof paths == 'string' ){
+          listRoutes["get"][paths] = func;
+        }else for(let path of paths){
+          listRoutes["get"][path] = func;
+        }
+
+      } else if(typeof func == 'object'){
+        // validade guard's e etc
+      }
+    },
+    "post":( paths, func )=>{
+      if( typeof func == 'function' ){
+        
+        if( typeof paths == 'string' ){
+          listRoutes["post"][paths] = func;
+        }else for(let path of paths){
+          listRoutes["post"][path] = func;
+        }
+        
+      }else if(typeof func == 'object'){
+        // validade guard's e etc
+      }
+    },
+    "put":( paths, func )=>{
+      if( typeof func == 'function' ){
+
+        if( typeof paths == 'string' ){
+          listRoutes["put"][paths] = func;
+        }else for(let path of paths){
+          listRoutes["put"][path] = func;
+        }
+
+      }
       else if(typeof func == 'object'){
         // validade guard's e etc
       }
     },
-    "post":( path, func )=>{
-      if( typeof func == 'function' )listRoutes["post"][path] = func;
-      else if(typeof func == 'object'){
-        // validade guard's e etc
-      }
-    },
-    "put":( path, func )=>{
-      if( typeof func == 'function' )listRoutes["put"][path] = func;
-      else if(typeof func == 'object'){
-        // validade guard's e etc
-      }
-    },
-    "delete":( path, func )=>{
-      if( typeof func == 'function' )listRoutes["delete"][path] = func;
-      else if(typeof func == 'object'){
+    "delete":( paths, func )=>{
+      if( typeof func == 'function' ){
+
+        if( typeof paths == 'string' ){
+          listRoutes["delete"][paths] = func;
+        }else for(let path of paths){
+          listRoutes["delete"][path] = func;
+        }
+
+      } else if(typeof func == 'object'){
         // validade guard's e etc
       }
     }
@@ -105,5 +159,48 @@ let StarServer = async () => {
   return server;
 }
 
+
+function readJson(res) {
+  return new Promise((resolve,reject)=>{
+
+    let buffer;
+    /* Register data cb */
+    res.onData((ab, isLast) => {
+      let chunk = Buffer.from(ab);
+      if (isLast) {
+        let json;
+        if (buffer) {
+          try {
+            json = JSON.parse(Buffer.concat([buffer, chunk]));
+          } catch (e) {
+            /* res.close calls onAborted */
+            res.close();
+            return;
+          }
+          resolve(json);
+        } else {
+          try {
+            json = JSON.parse(chunk);
+          } catch (e) {
+            /* res.close calls onAborted */
+            res.close();
+            return;
+          }
+          resolve(json);
+        }
+      } else {
+        if (buffer) {
+          buffer = Buffer.concat([buffer, chunk]);
+        } else {
+          buffer = Buffer.concat([chunk]);
+        }
+      }
+    });
+    /* Register error cb */
+    res.onAborted(reject);
+
+  })
+  
+}
 
 module.exports = StarServer;

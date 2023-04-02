@@ -1,0 +1,13 @@
+# Use OpenSSL for generate
+openssl genrsa -out private-key.pem 3072
+openssl rsa -in private-key.pem -RSAPublicKey_out -out public-key.pem
+
+
+# Use GNU for generate
+gpg --gen-key
+gpg -k
+# PGP FORMAT:
+# gpg --armor --export A8B0C6D0B6BDF9B946FD57CE3E7E96964B81B738 > public.key
+# gpg --armor --export-secret-key  A8B0C6D0B6BDF9B946FD57CE3E7E96964B81B738 > private.key
+gpg --export A8B0C6D0B6BDF9B946FD57CE3E7E96964B81B738 | openssl rsa -inform pgp -outform pem > public.pem
+gpg --export-secret-keys A8B0C6D0B6BDF9B946FD57CE3E7E96964B81B738 | openssl pkcs8 -inform pgp -outform pem -topk8 -nocrypt > private.pem
