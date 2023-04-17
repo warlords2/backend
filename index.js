@@ -2,23 +2,28 @@ let dotenv = require('dotenv');
 
 dotenv.config({path:'./.env'});
 
-// Cache  Config
+// Manager Cache and Database
 let ManagerCache = require('./cache.js');
-const cache = new ManagerCache();
-globalThis.manager_cache = cache;
+let { ManagerDatabase } =  require('@warlords/storage');
 
-// DataBase Config
-let ManagerDatabase =  require('@warlords/storage').ManagerDatabase;
-const database = new ManagerDatabase();
-globalThis.manager_database = database;
+globalThis.manager = {
+    cache: new ManagerCache(),
+    database: new ManagerDatabase(),
+}
+globalThis.manager.database.getConnection();
 
+// Util token valid and cript
 let ManagerToken = require('./util/token.js');
-globalThis.manager_token = ManagerToken;
-
 let ManagerCript = require('./util/cript.js');
-globalThis.manager_cript = ManagerCript;
+
+globalThis.util = {
+    token:ManagerToken,
+    cript:ManagerCript
+}
 
 // WebSocket config 
 let ServerBuilder  = require('./server.js');
 const server = ServerBuilder();
+
+
 

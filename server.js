@@ -4,7 +4,15 @@ let path = require('path');
 const COMPRESS = process.env.COMPRESS === "1";
 const PORT = process.env.PORT || 3000;
 
+
+const handler_controller = require('./errors/controller.handler');
+const handler_service  = require('./errors/service.handler');
+
+const { ControllerError } = require('./errors/model/controller.error');
+const { ServiceError } = require('./errors/model/service.error');
+
 const uWS = require("uWebSockets.js");
+
 // Listener middleware
 const listRoutes = {"get":[],"post":[],"put":[],"delete":[]};
 
@@ -35,10 +43,22 @@ let StarServer = async () => {
       res.writeHeader('content-type','text/plain');
       res.end( text );
     }
+    // Status
     res.status = (status) => {
       return res.writeStatus(status);
     }
-
+    res.ok = () => {
+      return res.writeStatus('200');
+    }
+    res.badrequest = () => {
+      return res.writeStatus('400');
+    }
+    res.unauthorized = () => {
+      return res.writeStatus('401');
+    }
+    res.created = () => {
+      return res.writeStatus('201');
+    }
     // REQ
     req.readJson = () => {
       return readJson(res);
@@ -49,11 +69,16 @@ let StarServer = async () => {
       
       if( jwt.length < 1 ) return false;
       
-      let is_valid = await globalThis.manager_token.valid(jwt);
+      let is_valid = await globalThis.util.token.valid(jwt);
 
       if( !is_valid ) return false;
-     
-      return await globalThis.manager_token.getDataFromToken(jwt)
+      
+      let jwtdata =  await globalThis.util.token.getDataFromToken(jwt)
+
+      return {
+        id: jwtdata.id,
+        role: jwtdata?.role,
+      }
 
     }
 
@@ -65,11 +90,22 @@ let StarServer = async () => {
     let func = listRoutes[req.getMethod()][req.getUrl()];
     
     try {
-      return await func(res, req);
+      return func(res, req);
     } catch (error) {
       console.error(error);
-      if(typeof func == 'undefined')return res.writeStatus('404').end('NotFound');
-      else return res.writeStatus('500').end('Internal Server Error');
+      if(typeof func == 'undefined'){
+
+        return res.writeStatus('404').end('NotFound');
+      // Controller's hook and logs
+      }else if( error instanceof ControllerError ){
+
+        return handler_controller(error, res, req);
+      // Service's hook and logs
+      }else if( error instanceof ServiceError ){
+
+        return handler_service(error, res, req);
+
+      } else return res.writeStatus('500').end('Internal Server Error');
     }
     
     //console.log(req.getMethod());
@@ -149,6 +185,7 @@ let StarServer = async () => {
       try{ require(controller)(router) }
       catch(err){
         // send arquive erro process
+        console.error(err)
       }
     }
     // O requisita, e já envia um novo express.Router
