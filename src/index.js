@@ -3,7 +3,7 @@ let dotenv = require('dotenv');
 dotenv.config({path:'./.env'});
 
 // Manager Cache and Database
-let ManagerCache = require('./cache.js');
+let ManagerCache = require('./app/cache.js');
 let { ManagerDatabase } =  require('@warlords/storage');
 
 globalThis.manager = {
@@ -13,8 +13,8 @@ globalThis.manager = {
 globalThis.manager.database.getConnection();
 
 // Util token valid and cript
-let ManagerToken = require('./util/token.js');
-let ManagerCript = require('./util/cript.js');
+let ManagerToken = require('./app/util/token.js');
+let ManagerCript = require('./app/util/cript.js');
 
 globalThis.util = {
     token:ManagerToken,
@@ -22,7 +22,7 @@ globalThis.util = {
 }
 
 // WebSocket config 
-let ServerBuilder  = require('./server.js');
+let ServerBuilder  = require('./app/server.js');
 const server = ServerBuilder();
 
 

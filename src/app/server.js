@@ -34,100 +34,107 @@ let StarServer = async () => {
 
   }).any('/*', async (res, req) => {
     
-    // RES 
-    res.json = (json) => {
-      res.writeHeader('content-type', 'text/json')
-      res.end(JSON.stringify(json));
-    }
-    res.send = (text) => {
-      res.writeHeader('content-type','text/plain');
-      res.end( text );
-    }
-    // Status
-    res.status = (status) => {
-      return res.writeStatus(status);
-    }
-    res.ok = () => {
-      return res.writeStatus('200');
-    }
-    res.badrequest = () => {
-      return res.writeStatus('400');
-    }
-    res.unauthorized = () => {
-      return res.writeStatus('401');
-    }
-    res.created = () => {
-      return res.writeStatus('201');
-    }
-    // REQ
-    req.readJson = () => {
-      return readJson(res);
-    }
-    req.authenticad = async () => {
-
-      let jwt = (req.header['authorization']+"").trim().split(" ")[1];
-      
-      if( jwt.length < 1 ) return false;
-      
-      let is_valid = await globalThis.util.token.valid(jwt);
-
-      if( !is_valid ) return false;
-      
-      let jwtdata =  await globalThis.util.token.getDataFromToken(jwt)
-
-      return {
-        id: jwtdata.id,
-        role: jwtdata?.role,
-      }
-
-    }
-
-    req.header = {};
-    req.forEach(async (key, value) => {
-      req.header[key] = value;
-    });
-    
-    let func = listRoutes[req.getMethod()][req.getUrl()];
-    
-    try {
-      return func(res, req);
-    } catch (error) {
-      console.error(error);
-      if(typeof func == 'undefined'){
-
-        return res.writeStatus('404').end('NotFound');
-      // Controller's hook and logs
-      }else if( error instanceof ControllerError ){
-
-        return handler_controller(error, res, req);
-      // Service's hook and logs
-      }else if( error instanceof ServiceError ){
-
-        return handler_service(error, res, req);
-
-      } else return res.writeStatus('500').end('Internal Server Error');
-    }
-    
-    //console.log(req.getMethod());
-    ///console.log(req.getUrl());
+      console.log('dsasdasd');
+//    console.log(req.getMethod());
+//    console.log(req.getUrl());
 
     
   }).listen( PORT, (listenSocket) => {
-  
+
     if (listenSocket) {
       console.log('Listening to port '+ PORT);
     }
-    
+
   });
 
+  // Middleware 
+  let registerRoute = ( method, path, func ) => {
+    
+    server[method]( path, async (res, req) => {
+
+      res.json = (json) => {
+        res.writeHeader('content-type', 'text/json')
+        res.end(JSON.stringify(json));
+      }
+      res.send = (text) => {
+        res.writeHeader('content-type','text/plain');
+        res.end( text );
+      }
+      // Status
+      res.status = (status) => {
+        return res.writeStatus(status);
+      }
+      res.ok = () => {
+        return res.writeStatus('200');
+      }
+      res.badrequest = () => {
+        return res.writeStatus('400');
+      }
+      res.unauthorized = () => {
+        return res.writeStatus('401');
+      }
+      res.created = () => {
+        return res.writeStatus('201');
+      }
+      // REQ
+      req.readJson = () => {
+        return readJson(res);
+      }
+      req.authenticad = async () => {
+  
+        let jwt = (req.header['authorization']+"").trim().split(" ")[1];
+        
+        if( jwt.length < 1 ) return false;
+        
+        let is_valid = await globalThis.util.token.valid(jwt);
+  
+        if( !is_valid ) return false;
+        
+        let jwtdata =  await globalThis.util.token.getDataFromToken(jwt)
+  
+        return {
+          id: jwtdata.id,
+          role: jwtdata?.role,
+        }
+      }
+  
+      req.header = {};
+      req.forEach(async (key, value) => {
+        req.header[key] = value;
+      });
+
+      try {
+        
+        return func(res, req);
+
+      } catch (error) {
+        console.error(error);
+        if(typeof func == 'undefined'){
+  
+          return res.writeStatus('404').end('NotFound');
+        // Controller's hook and logs
+        }else if( error instanceof ControllerError ){
+  
+          return handler_controller(error, res, req);
+        // Service's hook and logs
+        }else if( error instanceof ServiceError ){
+  
+          return handler_service(error, res, req);
+  
+        } else return res.writeStatus('500').end('Internal Server Error');
+      }
+
+    });
+
+  };
   // order method(size group 4) --> path(size group 0...)
   let router = {
     "get":( paths, func )=>{
       if( typeof func == 'function' ){
         if( typeof paths == 'string' ){
-          listRoutes["get"][paths] = func;
+          registerRoute('get', paths, func);
         }else for(let path of paths){
-          listRoutes["get"][path] = func;
+          registerRoute('get', path, func);
         }
 
       } else if(typeof func == 'object'){
@@ -138,9 +145,9 @@ let StarServer = async () => {
       if( typeof func == 'function' ){
         
         if( typeof paths == 'string' ){
-          listRoutes["post"][paths] = func;
+          registerRoute('post', paths, func);
         }else for(let path of paths){
-          listRoutes["post"][path] = func;
+          registerRoute('post', path, func);
         }
         
       }else if(typeof func == 'object'){
@@ -151,9 +158,9 @@ let StarServer = async () => {
       if( typeof func == 'function' ){
 
         if( typeof paths == 'string' ){
-          listRoutes["put"][paths] = func;
+          registerRoute('put', paths, func);
         }else for(let path of paths){
-          listRoutes["put"][path] = func;
+          registerRoute('put', path, func);
         }
 
       }
@@ -165,9 +172,9 @@ let StarServer = async () => {
       if( typeof func == 'function' ){
 
         if( typeof paths == 'string' ){
-          listRoutes["delete"][paths] = func;
+          registerRoute('delete', path, func);
         }else for(let path of paths){
-          listRoutes["delete"][path] = func;
+          registerRoute('delete', path, func);
         }
 
       } else if(typeof func == 'object'){
