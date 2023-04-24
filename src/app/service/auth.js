@@ -1,5 +1,13 @@
-let { Login } = require('@warlords/storage');
+const { faker }  = require('@faker-js/faker');
+const { ServiceError } = require('../errors/model/service.error');
 const { Service } = require('./service');
+
+let { TypeLogin, User } = require('@warlords/common');
+let { Login } = require('@warlords/storage');
+
+
+let { UserService } = require('../service/user');
+let { hash } = require('../util/cript');
 
 class AuthService extends Service{
 
@@ -9,29 +17,39 @@ class AuthService extends Service{
 
 		let repository = await AuthService.getRepository(Login);
 
+		console.log("CREATE")
+
 		if( login.type == TypeLogin.MAIL ){
 
+			console.log("CREATE MAIL")
 			// verify existi email 
 			// 	email == username
 			let has_login = await repository.findOneBy({
-				username: login.username
+				identifier: login.identifier
 			});
 
-			if(!has_login) throw new Error("Not Found");//res.badrequest().json({"dd":2323})
+			console.log("CREATE MAIL 2")
+
+			if( has_login ) throw new ServiceError("mail in use");//res.badrequest().json({"dd":2323})
+
+			console.log("CREATE MAIL 3")
+
+			login.password = await hash(login.password);
 			
 		} else if( login.type == TypeLogin.NONCE ){}
 
-		// adding login for user existing
-		if( login.user ) {
-			// create login
-			console.log("Usuario authenticado!");
+		console.log("ADDING CREATE")
 
-		// adding login and new user
-		} else {
-			// create user
-			console.log("Não existe o Usuario");
-		};
-        
+		// adding login for user existing
+		if(!login.user ) {
+
+			// adding login and new user faker.name.firstName()
+			login.user = await UserService.create(new User({ name: faker.name.firstName() }))
+
+			console.log("USER ADDING",login.user)
+		}
+
+		return repository.save(login);
     }
 
     static async login(email, password) {  }

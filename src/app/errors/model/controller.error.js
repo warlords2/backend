@@ -1,6 +1,21 @@
+'use strict'
+
 class ControllerError extends Error {
-    constructor(message, options) {
-      super(message, options);
+    constructor(message, code) {
+      super(message);
+      
+      this.name = this.constructor.name;
+      this.code = code;
+
+      Error.captureStackTrace(this, this.constructor);
+    }
+
+    getMenssage(){
+      return this.message;
+    }
+
+    toString(){
+      return this.name.toLowerCase();
     }
 }
 

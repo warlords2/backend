@@ -1,8 +1,11 @@
+const express = require('express');
+
 let fs =   require('fs-extra');
 let path = require('path');
 
 const COMPRESS = process.env.COMPRESS === "1";
-const PORT = process.env.PORT || 3000;
+const PORT_ENV = process.env.PORT || 3000;
+const app = express();
 
 
 const handler_controller = require('./errors/controller.handler');
@@ -11,121 +14,119 @@ const handler_service  = require('./errors/service.handler');
 const { ControllerError } = require('./errors/model/controller.error');
 const { ServiceError } = require('./errors/model/service.error');
 
-const uWS = require("uWebSockets.js");
 
-// Listener middleware
-const listRoutes = {"get":[],"post":[],"put":[],"delete":[]};
+let StarServer = async (PORT = PORT_ENV) => {
 
-let StarServer = async () => {
+  app.use(express.json());
 
-  let server = uWS./*SSL*/App({
+  
+  app.listen(PORT, () => {
 
-    /* There are more SSL options, cut for brevity 
-    key_file_name: 'key.pem',
-    cert_file_name: 'cert.pem',*/
-    
-  }).ws('/*', {
-
-    /* There are many common helper features */
-    idleTimeout: 32,
-    maxBackpressure: 1024,
-    maxPayloadLength: 512,
-    compression: uWS.DEDICATED_COMPRESSOR_3KB,
-
-  }).any('/*', async (res, req) => {
-    
-      console.log('dsasdasd');
-//    console.log(req.getMethod());
-//    console.log(req.getUrl());
-
-    
-  }).listen( PORT, (listenSocket) => {
-
-    if (listenSocket) {
-      console.log('Listening to port '+ PORT);
-    }
+    console.log('LISTEN '+PORT);
 
   });
 
   // Middleware 
   let registerRoute = ( method, path, func ) => {
-    
-    server[method]( path, async (res, req) => {
 
-      res.json = (json) => {
-        res.writeHeader('content-type', 'text/json')
-        res.end(JSON.stringify(json));
-      }
-      res.send = (text) => {
-        res.writeHeader('content-type','text/plain');
-        res.end( text );
-      }
-      // Status
-      res.status = (status) => {
-        return res.writeStatus(status);
-      }
-      res.ok = () => {
-        return res.writeStatus('200');
-      }
-      res.badrequest = () => {
-        return res.writeStatus('400');
-      }
-      res.unauthorized = () => {
-        return res.writeStatus('401');
-      }
-      res.created = () => {
-        return res.writeStatus('201');
-      }
-      // REQ
-      req.readJson = () => {
-        return readJson(res);
-      }
-      req.authenticad = async () => {
-  
-        let jwt = (req.header['authorization']+"").trim().split(" ")[1];
-        
-        if( jwt.length < 1 ) return false;
-        
-        let is_valid = await globalThis.util.token.valid(jwt);
-  
-        if( !is_valid ) return false;
-        
-        let jwtdata =  await globalThis.util.token.getDataFromToken(jwt)
-  
-        return {
-          id: jwtdata.id,
-          role: jwtdata?.role,
-        }
-      }
-  
-      req.header = {};
-      req.forEach(async (key, value) => {
-        req.header[key] = value;
-      });
+    app[method]( path, async (req, res) => {
 
-      try {
-        
-        return func(res, req);
+          // Status
+          res.ok = () => {
+            res.status(200);
+            return res;
+          }
+          res.badrequest = () => {
+            res.status(400);
+            return res;
+          }
+          res.unauthorized = () => {
+            res.status(401);
+            return res;
+          }
+          res.created = () => {
+            res.status(201);
+            return res;
+          }
+          // REQ
+          req.readJson = () => {
+            return req.body;
+          }
+          req.authenticad = async () => {
+      
+            let jwt = (req.headers['authorization']+"").trim();
+            
+            if( jwt ) return false;
+            
+            jwt = jwt.split(" ")[1];
+            
+            let is_valid = await globalThis.util.token.valid(jwt);
+      
+            if( !is_valid ) return false;
+            
+            let jwtdata =  await globalThis.util.token.getDataFromToken(jwt);
+      
+            if( !jwtdata.identifier && !jwtdata.id )return false;
 
-      } catch (error) {
-        console.error(error);
-        if(typeof func == 'undefined'){
-  
-          return res.writeStatus('404').end('NotFound');
-        // Controller's hook and logs
-        }else if( error instanceof ControllerError ){
-  
-          return handler_controller(error, res, req);
-        // Service's hook and logs
-        }else if( error instanceof ServiceError ){
-  
-          return handler_service(error, res, req);
-  
-        } else return res.writeStatus('500').end('Internal Server Error');
-      }
+            return {
+              identifier: jwtdata.identifier,
+              id: jwtdata.id,
+            }
+          }
+
+          req.url = req.originalUrl;
+/*          req.method = req.getMethod();
+          req.header = {};
+          req.headers.forEach((key, value) => {
+            req.header[key] = value;
+          });
+*/
+          try {
+
+            func(req, res).catch((err)=>{          
+              //    ASYNC METHOD
+              console.log(err)
+              if( err instanceof ControllerError ){
+                console.log("CCCCCCC")
+                handler_controller(err, req, res);
+
+              // Service's hook and logs
+              } else if( err instanceof ServiceError ){
+                console.log("SSSSSSS")
+                handler_service(err, req, res);
+        
+              } else { 
+                res.status(500);
+                res.send('Internal Server Error'); 
+              }
+
+            });
+
+          } catch ( err ) {
+            //    SYNC METHOD
+
+            if(typeof func == 'undefined'){
+      
+              return res.writeStatus('404').end('NotFound');
+            // Controller's hook and logs
+            }else if( err instanceof ControllerError ){
+              console.log("CCCCCCC")
+              handler_controller(err, req, res);
+            // Service's hook and logs
+            }else if( err instanceof ServiceError ){
+              console.log("SSSSSSS")
+              handler_service(err, req, res);
+      
+            } else { 
+              res.status(500);
+              res.send('Internal Server Error'); 
+            }
+
+
+          }
+
 
     });
-
   };
   // order method(size group 4) --> path(size group 0...)
   let router = {
@@ -195,56 +196,9 @@ let StarServer = async () => {
         console.error(err)
       }
     }
-    // O requisita, e já envia um novo express.Router
-    //require(controller)(middleware);
-
   });
   
-  return server;
-}
-
-
-function readJson(res) {
-  return new Promise((resolve,reject)=>{
-
-    let buffer;
-    /* Register data cb */
-    res.onData((ab, isLast) => {
-      let chunk = Buffer.from(ab);
-      if (isLast) {
-        let json;
-        if (buffer) {
-          try {
-            json = JSON.parse(Buffer.concat([buffer, chunk]));
-          } catch (e) {
-            /* res.close calls onAborted */
-            res.close();
-            return;
-          }
-          resolve(json);
-        } else {
-          try {
-            json = JSON.parse(chunk);
-          } catch (e) {
-            /* res.close calls onAborted */
-            res.close();
-            return;
-          }
-          resolve(json);
-        }
-      } else {
-        if (buffer) {
-          buffer = Buffer.concat([buffer, chunk]);
-        } else {
-          buffer = Buffer.concat([chunk]);
-        }
-      }
-    });
-    /* Register error cb */
-    res.onAborted(reject);
-
-  })
-  
+  return app;
 }
 
 module.exports = StarServer;
