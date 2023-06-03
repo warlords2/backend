@@ -1,17 +1,38 @@
 version: '3.8'
 services:
     app:
+        build: 
+            context: ./
+            dockerfile: Dockerfile
         env_file: .env
+        restart: always
         networks:
             - bridge_net
+            - back_net
+        volumes:
+            - ./src/:/app/src
+        ports:
+           - "3000:3000"
     memcached:
         image: memcached:alpine
         restart: always
         env_file: .env
         networks:
-            - bridge_net
+            - back_net
 #       ports:
 #           - "11211:11211"
+    storage:
+        networks:
+            - back_net
+        extends:
+            file: ../storage/docker-compose.yml
+            service: database
+        environment:
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=123456
+            - POSTGRES_DB=warlords
 networks:
+    back_net:
+        external: false
     bridge_net:
         driver: bridge
