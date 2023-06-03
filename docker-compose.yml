@@ -15,8 +15,8 @@ services:
            - "3000:3000"
         depends_on:
             - storage
-            - memcached
-    memcached:
+            - cache
+    cache:
         image: memcached:alpine
         restart: always
         env_file: .env
