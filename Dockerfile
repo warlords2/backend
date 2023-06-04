@@ -7,6 +7,10 @@ COPY nodemon.json /app/
 COPY private-key.pem /app/
 COPY public-key.pem /app/
 
+ENV BACKEND_PORT 4000
+
+RUN echo 'BACKEND_PORT=${BACKEND_PORT}' >> .env
+
 ENV POSTGRES_HOST storage
 ENV POSTGRES_USER root
 ENV POSTGRES_PASSWORD 123456
@@ -39,7 +43,7 @@ ENV DIR_LOCALES ./translate/locales
 RUN echo 'DIR_LOCALES=${DIR_LOCALES}' >> .env
 
 RUN npm install -g nodemon@2.0.22 && npm install
-EXPOSE 3000
+EXPOSE ${BACKEND_PORT}
 
 VOLUME /app/src
 

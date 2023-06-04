@@ -12,7 +12,7 @@ services:
         volumes:
             - ./src/:/app/src
         ports:
-           - "3000:3000"
+           - "4000:4000"
         depends_on:
             - storage
             - cache

@@ -2,7 +2,7 @@ let fs =   require('fs-extra');
 let path = require('path');
 
 const COMPRESS = process.env.COMPRESS === "1";
-const PORT_ENV = process.env.PORT || 3000;
+const PORT_ENV = process.env.PORT || process.env.BACKEND_PORT || 3000;
 
 
 const handler_controller = require('./errors/controller.handler');
