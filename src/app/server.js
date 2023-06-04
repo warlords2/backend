@@ -30,7 +30,7 @@ let StarServer = async (PORT = PORT_ENV) => {
   let registerRoute = ( method, path, func ) => {
 
     app[method]( path, async (req, res) => {
-
+      
           // Status
           res.ok = () => {
             res.status(200);
@@ -81,6 +81,7 @@ let StarServer = async (PORT = PORT_ENV) => {
             req.header[key] = value;
           });
 */
+          
           try {
 
             func(req, res).catch((err)=>{          
