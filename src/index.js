@@ -6,10 +6,7 @@ dotenv.config({path:'./.env'});
 let ManagerCache = require('./app/cache.js');
 let { ManagerDatabase } =  require('@warlords/storage');
 
-globalThis.manager = {
-    cache: new ManagerCache(),
-    database: new ManagerDatabase(),
-}
+globalThis.manager = { cache: new ManagerCache(), database: new ManagerDatabase() };
 globalThis.manager.database.getConnection();
 
 // Util token valid and cript
