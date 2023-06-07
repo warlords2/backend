@@ -1,6 +1,6 @@
 
 let memory_cache = require("./cache/node_cache.js");
-let heavy_cache = require("./cache/memcached.js");
+let heavy_cache = require("./cache/redis.js");
 let Optional = require("optional-js");
 
 
@@ -40,7 +40,8 @@ class ManagerCache{
 
     setHeavy(key , value, ttl = 3600){
         let value_save = JSON.stringify(value);
-        this.heavy.set( key, value_save, { expires: ttl });
+        //setex(key, 60, value)
+        this.heavy.set( key, ttl , value_save);
     }
 
     getHeavy( key ){

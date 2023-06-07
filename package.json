@@ -21,6 +21,7 @@
     "nodemon": "2.0.22",
     "optional-js": "2.3.0",
     "path": "^0.12.7",
+    "redis": "^4.6.7",
     "reflect-metadata": "^0.1.13",
     "typescript": "^5.0.3"
   }

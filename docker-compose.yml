@@ -17,13 +17,14 @@ services:
             - storage
             - cache
     cache:
-        image: memcached:alpine
+        image: redis:alpine
+        command: /bin/sh -c "redis-server --requirepass $$REDIS_PASSWORD"
         restart: always
         env_file: .env
         networks:
             - back_net
-#       ports:
-#           - "11211:11211"
+#        ports:
+#           - "6379:6379"
     storage:
         networks:
             - back_net
