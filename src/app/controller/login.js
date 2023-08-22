@@ -27,7 +27,12 @@ module.exports = (router) => {
 		}
 		console.log("AuthService.create")
 		return AuthService.create(loginData).then( loginEntity =>{
-			return globalThis.util.token.create( { "identifier": loginEntity.identifier, "id": loginEntity.id, "type": loginEntity.type } ).then(jwt=>{
+			console.log("Login entity --> ", loginEntity)
+			return globalThis.util.token.create( { 
+				"identifier": loginEntity.identifier, 
+				"id": loginEntity.id, 
+				"type": loginEntity.type 
+			} ).then(jwt=>{
 				res.created().send(jwt);
 			});
 

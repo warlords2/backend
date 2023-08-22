@@ -2,8 +2,13 @@ let dotenv = require('dotenv');
 
 dotenv.config({path:'./.env'});
 
-// Manager Cache and Database
+// Logs audit
+let { getLogger } = require('@warlords/audit');
+
+// Manager Cache
 let ManagerCache = require('./app/cache.js');
+
+// Manager Database
 let { ManagerDatabase } =  require('@warlords/storage');
 
 globalThis.manager = { cache: new ManagerCache(), database: new ManagerDatabase() };

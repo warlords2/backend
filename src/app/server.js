@@ -53,13 +53,13 @@ let StarServer = async (PORT = PORT_ENV) => {
             return req.body;
           }
           req.authenticad = async () => {
-      
+
             let jwt = (req.headers['authorization']+"").trim();
-            
+
             if( jwt ) return false;
-            
+
             jwt = jwt.split(" ")[1];
-            
+
             let is_valid = await globalThis.util.token.valid(jwt);
       
             if( !is_valid ) return false;
@@ -88,14 +88,10 @@ let StarServer = async (PORT = PORT_ENV) => {
               //    ASYNC METHOD
               console.log(err)
               if( err instanceof ControllerError ){
-                console.log("CCCCCCC")
                 handler_controller(err, req, res);
-
               // Service's hook and logs
               } else if( err instanceof ServiceError ){
-                console.log("SSSSSSS")
                 handler_service(err, req, res);
-        
               } else { 
                 res.status(500);
                 res.send('Internal Server Error'); 
@@ -111,19 +107,14 @@ let StarServer = async (PORT = PORT_ENV) => {
               return res.writeStatus('404').end('NotFound');
             // Controller's hook and logs
             }else if( err instanceof ControllerError ){
-              console.log("CCCCCCC")
               handler_controller(err, req, res);
             // Service's hook and logs
             }else if( err instanceof ServiceError ){
-              console.log("SSSSSSS")
               handler_service(err, req, res);
-      
             } else { 
               res.status(500);
               res.send('Internal Server Error'); 
             }
-
-
           }
 
 

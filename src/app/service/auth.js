@@ -17,7 +17,7 @@ class AuthService extends Service{
 
 		let repository = await AuthService.getRepository(Login);
 
-		console.log("CREATE")
+		console.log("CREATE", loginData)
 
 		if( login.type == TypeLogin.MAIL ){
 
@@ -38,15 +38,16 @@ class AuthService extends Service{
 			
 		} else if( login.type == TypeLogin.NONCE ){}
 
-		console.log("ADDING CREATE")
+		console.log("ADDING LOGIN")
 
 		// adding login for user existing
 		if(!login.user ) {
 
+			console.log("LOGIN ADDING")
 			// adding login and new user faker.name.firstName()
 			login.user = await UserService.create(new User({ name: faker.name.firstName() }))
 
-			console.log("USER ADDING",login.user)
+			console.log("ADDING LOGIN ",login.user)
 		}
 
 		return repository.save(login);

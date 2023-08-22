@@ -16,6 +16,7 @@ services:
         depends_on:
             - storage
             - cache
+            - loki
     cache:
         image: redis:alpine
         command: /bin/sh -c "redis-server --requirepass $$REDIS_PASSWORD"
@@ -35,6 +36,21 @@ services:
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=123456
             - POSTGRES_DB=warlords
+    loki:
+        env_file: .env
+        networks:
+            - back_net
+        extends:
+            file: ../audit/docker-compose.yml
+            service: loki
+    grafana:
+        env_file: .env
+        networks:
+            - back_net
+            - bridge_net
+        extends:
+            file: ../audit/docker-compose.yml
+            service: grafana
 networks:
     back_net:
         external: false
