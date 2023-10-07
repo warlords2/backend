@@ -10,10 +10,11 @@ module.exports = (router) => {
 	router.post('/login/create', async (req, res) => {
 
 		let json = await req.readJson();
+		console.log(json);
 		let auth =  await req.authenticad();
 		console.log("AUTH")
 		let loginData = new Login(json);
-		
+
 		// Valid request and Check CONSTRAINT User
 		let errors = await loginData.isValid();
 		for(let erro of errors){
@@ -26,18 +27,17 @@ module.exports = (router) => {
 			loginData.user = await UserService.findById(auth.id);
 		}
 		console.log("AuthService.create")
-		return AuthService.create(loginData).then( loginEntity =>{
-			console.log("Login entity --> ", loginEntity)
-			return globalThis.util.token.create( { 
+		let loginEntity = await AuthService.create(loginData);
+		
+		console.log("Login entity --> ", loginEntity)
+		let jwt = await globalThis.util.token.create({ 
 				"identifier": loginEntity.identifier, 
 				"id": loginEntity.id, 
 				"type": loginEntity.type 
-			} ).then(jwt=>{
-				res.created().send(jwt);
 			});
 
-		}).catch(err =>{ return res.badrequest().end() })
+		res.created().send(jwt);
 
-	});
+	})//.catch(err =>{ return res.badrequest().end() })
 
 }
