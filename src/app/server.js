@@ -53,24 +53,29 @@ let StarServer = async (PORT = PORT_ENV) => {
             return req.body;
           }
           req.authenticad = async () => {
+            
+            let jwt = (req.headers['authorization']);
 
-            let jwt = (req.headers['authorization']+"").trim();
+            if( typeof jwt == "undefined" ) return false;
 
-            if( jwt ) return false;
-
-            jwt = jwt.split(" ")[1];
+            jwt = jwt.trim().split(" ")[1];
 
             let is_valid = await globalThis.util.token.valid(jwt);
-      
+
             if( !is_valid ) return false;
             
             let jwtdata =  await globalThis.util.token.getDataFromToken(jwt);
-      
+            console.log("JWT :",jwtdata);
+
+
             if( !jwtdata.identifier && !jwtdata.id )return false;
+            
 
             return {
-              identifier: jwtdata.identifier,
-              id: jwtdata.id,
+              "identifier": jwtdata.identifier,
+			        "type": jwtdata.type,
+              "id": jwtdata.id,
+			        "name": jwtdata.name
             }
           }
 

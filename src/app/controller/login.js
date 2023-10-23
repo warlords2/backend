@@ -11,8 +11,9 @@ module.exports = (router) => {
 
 		let json = await req.readJson();
 		console.log(json);
+
 		let auth =  await req.authenticad();
-		console.log("AUTH")
+
 		let loginData = new Login(json);
 
 		// Valid request and Check CONSTRAINT User
@@ -22,22 +23,50 @@ module.exports = (router) => {
 				throw new ControllerError( erro.constraints[msg] ,'VALID');
 			}
 		}
-		console.log("AUTH")
+
 		if( auth ){
 			loginData.user = await UserService.findById(auth.id);
 		}
-		console.log("AuthService.create")
 		let loginEntity = await AuthService.create(loginData);
-		
-		console.log("Login entity --> ", loginEntity)
+
 		let jwt = await globalThis.util.token.create({ 
-				"identifier": loginEntity.identifier, 
-				"id": loginEntity.id, 
-				"type": loginEntity.type 
-			});
+			"identifier": loginEntity.identifier, 
+			"type": loginEntity.type,
+			"id": loginEntity.user.id, 
+			"name": loginEntity.user.name
+		});
 
 		res.created().send(jwt);
 
 	})//.catch(err =>{ return res.badrequest().end() })
+
+	router.post('/login/auth', async (req, res) => {
+
+		let json = await req.readJson();
+		console.log(json);
+
+		let loginData = new Login(json);
+
+		// Valid request and Check CONSTRAINT User
+//		let errors = await loginData.isValid();
+		if( loginData.identifier.length < 1 && loginData.password.length < 1){
+			throw new ControllerError( "Login or Password Incorrect" ,'VALID')
+		}
+
+		let loginEntity = await AuthService.login(loginData);
+		
+		if( !loginEntity ) throw new ControllerError( "Login or Password Incorrect" ,'VALID') 
+		
+
+		let jwt = await globalThis.util.token.create({
+			"identifier": loginEntity.identifier, 
+			"type": loginEntity.type,
+			"id": loginEntity.user.id, 
+			"name": loginEntity.user.name
+		});
+
+		res.created().send(jwt);
+
+	})
 
 }

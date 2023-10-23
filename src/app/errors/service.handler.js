@@ -1,5 +1,5 @@
 // Service's hook and logs
-module.exports = (error, res, req) =>{
+module.exports = (error, req, res) =>{
     return res.badrequest().json({
         "timestamp": new Date(),
         "status": 401,

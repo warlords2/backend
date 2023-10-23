@@ -7,7 +7,7 @@ let { Login } = require('@warlords/storage');
 
 
 let { UserService } = require('../service/user');
-let { hash } = require('../util/cript');
+let { hash, check } = require('../util/cript');
 
 class AuthService extends Service{
 
@@ -17,43 +17,53 @@ class AuthService extends Service{
 
 		let repository = await AuthService.getRepository(Login);
 
-		console.log("CREATE", loginData)
-
 		if( login.type == TypeLogin.MAIL ){
 
-			console.log("CREATE MAIL")
 			// verify existi email 
 			// 	email == username
-			let has_login = await repository.findOneBy({
+			let hasLogin = await repository.findOneBy({
 				identifier: login.identifier
 			});
 
-			console.log("CREATE MAIL 2")
-
-			if( has_login ) throw new ServiceError("mail in use");//res.badrequest().json({"dd":2323})
-
-			console.log("CREATE MAIL 3")
+			if( hasLogin ) throw new ServiceError("mail in use");//res.badrequest().json({"dd":2323})
 
 			login.password = await hash(login.password);
 			
-		} else if( login.type == TypeLogin.NONCE ){}
-
-		console.log("ADDING LOGIN")
+		} else if( login.type == TypeLogin.NONCE ){} //Nonce not implemented
 
 		// adding login for user existing
-		if(!login.user ) {
-
-			console.log("LOGIN ADDING")
+		if( !login.user.id ) {
 			// adding login and new user faker.name.firstName()
-			login.user = await UserService.create(new User({ name: faker.name.firstName() }))
-
-			console.log("ADDING LOGIN ",login.user)
+			login.user = await UserService.create(new User({ name: login.user.name || faker.name.firstName() }))
 		}
 
 		return repository.save(login);
     }
 
-    static async login(email, password) {  }
+    static async login( loginData ) { 
+		let login = new Login(loginData);
+
+		let repository = await AuthService.getRepository(Login);
+
+		let hasLogin = await repository.findOneBy({
+			identifier: login.identifier
+		}, { relations: ['user'] });
+
+		if( !hasLogin ) throw new ServiceError("Login or Password Incorrect");
+
+		if( login.type == TypeLogin.MAIL ){
+
+			let result = await check( login.password, hasLogin.password );
+
+			if( result ){
+				console.log("loginEntity: ", hasLogin );
+				return hasLogin;
+			}
+
+		} else if( login.type == TypeLogin.NONCE ){} //Nonce not implemented
+
+		return false;
+	 }
     
     static async logout(userId) {   }
     
