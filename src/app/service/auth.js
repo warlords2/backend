@@ -5,7 +5,7 @@ const { Service } = require('./service');
 let { TypeLogin, User } = require('@warlords/common');
 let { Login } = require('@warlords/storage');
 
-
+let	{ MailService }	= require('./mail');
 let { UserService } = require('../service/user');
 let { hash, check } = require('../util/cript');
 
@@ -45,9 +45,10 @@ class AuthService extends Service{
 
 		let repository = await AuthService.getRepository(Login);
 
-		let hasLogin = await repository.findOneBy({
-			identifier: login.identifier
-		}, { relations: ['user'] });
+		let hasLogin = await repository.findOne({
+			where:{ identifier: login.identifier },
+			relations: ['user']
+		});
 
 		if( !hasLogin ) throw new ServiceError("Login or Password Incorrect");
 
@@ -56,19 +57,30 @@ class AuthService extends Service{
 			let result = await check( login.password, hasLogin.password );
 
 			if( result ){
-				console.log("loginEntity: ", hasLogin );
 				return hasLogin;
 			}
 
 		} else if( login.type == TypeLogin.NONCE ){} //Nonce not implemented
 
 		return false;
-	 }
-    
-    static async logout(userId) {   }
-    
-    static async requestPasswordReset(email) {  }
+	}
+    // Not Implement!!!
+    static async requestPasswordReset(email) { 
+		// Verify email exist
 
+		// Send Email
+		let emailTo = "<email que recebera>";
+		let emailSubject = "<assunto>";
+		let data = {
+			resetToken:"",
+			username:""
+		};
+		let placeholder = "<arquivo.pug OU engine posterior>";
+		
+		MailService.sendEmail(emailTo, emailSubject, data, placeholder);
+
+	}
+    // Not Implement!!!
     static async resetPassword(resetToken, newPassword) {}
 }
 
