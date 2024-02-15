@@ -8,7 +8,9 @@ class WorldService extends Service{
     // Not Implement!!!
     static async find() {
         let repository = await WorldService.getRepository(World);
-        return repository.find();
+        return repository.find({
+            relations: ['provinces', 'provinces.position' ,'provinces.cities']     
+        });
     }
 
 }
