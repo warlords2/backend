@@ -43,7 +43,6 @@ module.exports = (router) => {
 	router.post('/login/auth', async (req, res) => {
 
 		let json = await req.readJson();
-		console.log(json);
 
 		let loginData = new Login(json);
 

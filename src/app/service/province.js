@@ -6,6 +6,17 @@ let { Province, World, Position } = require('@warlords/storage');
 
 class ProvinceService extends Service{
 
+    static async findById({ id }) {
+
+        let repository = await ProvinceService.getRepository(Province);
+
+        return repository.find({
+            where: {
+                id
+            }
+        });
+    }
+
     static async findByWorldId({ id }) {
 
         let repository = await ProvinceService.getRepository(Province);
