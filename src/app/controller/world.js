@@ -4,7 +4,7 @@ let { WorldService } = require('../service/world.js');
 
 module.exports = (router) => {
 	
-	// Create User and Login
+	// Get list worlds
 	router.get('/world', async (req, res) => {
 
 		let listWorlds = await WorldService.find();

@@ -7,7 +7,7 @@ const { Player } = require('@warlords/common');
 
 module.exports = (router) => {
 	
-	// Create User and Login
+	// Create Player In World
 	router.post('/world/:worldId/player/create', async (req, res) => {
 
         let auth = await req.authenticad();

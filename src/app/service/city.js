@@ -41,6 +41,13 @@ class CityService extends Service{
 
         cityData.owner = await repOwner.findOne( { where: { id: ownerId } } );
 
+        // ?? Send Game Machine for create city ??
+        // ?? Game Machine define City in World?
+        // Create Object ??GameMachine?? para interagir com o mundo?? Via RabbitMQ??
+        // To imaginando uma banco master que só a game machine interage e os backends de forma limitada 
+        // Um Banco Slave para o Back end ler
+        // Dá para escalar uam serie de leitores do rabbit mq na game machine??
+        // Define Position via alg da game Machine
         cityData.position = await repPosition.save( new Position(cityData.position))
 
         // @todo valid position in province

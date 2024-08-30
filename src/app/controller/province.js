@@ -4,7 +4,7 @@ let { ProvinceService } = require('../service/province.js');
 
 module.exports = (router) => {
 	
-	// Create User and Login
+	// List Provinces
 	router.get('/world/:worldId/province', async (req, res) => {
 
 		let worldId = req.params.worldId;

@@ -1,10 +1,10 @@
 module.exports = (router) => {
 	
-	// Create User and Login
+	// check
 	router.get('/', async (req, res) => {
-        console.log("bateu!!");
+        console.log("/ - check");
 
-		res.json({"test":222});
+		res.json({"status": "ok"});
 
 	});
 

@@ -6,7 +6,7 @@ const { City } = require('@warlords/common');
 
 module.exports = (router) => {
 	
-	// Create User and Login
+	// Get data for City
 	router.get('/world/:worldId/province/:provinceId/city', async (req, res) => {
 
         let provinceId = req.params.provinceId;
@@ -22,7 +22,8 @@ module.exports = (router) => {
 			"path": req.url
 		});
 	});
-
+	
+	// Create City
 	router.post('/world/:worldId/province/:provinceId/city', async (req, res) => {
 
 		let json = await req.readJson();
