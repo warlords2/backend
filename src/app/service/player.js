@@ -46,7 +46,7 @@ class PlayerService extends Service{
 
         // Criar um novo player 
         if( !player2 || player2.length > 0){
-            console.log("Erro impedir criacao de novo player")
+            return console.log("Erro impedir criacao de novo player")
         }
 
         let player = await repPlayer.save(new Player({
@@ -62,20 +62,15 @@ class PlayerService extends Service{
         console.log("player: ", player);
 
         // Criar cidade em uma provincia aleatoria que esteja disponivel, verificar a resposta do service create city retornou 
-        // @todo Permitir que o usuario depois de 1 certo ponto poder mudar, de preferencia permitir isso na construcao do mundo ou edicao tipo um macro
+        // @todo Permitir que o usuario depois de 1 certo ponto poder mudara posição deuma cidade?? de preferencia permitir isso na construcao do mundo ou edicao tipo um macro
+        //      Nao, a cidade vai ficar aonde esta!!!!
 
         let city = await CityService.createRandom(worldId, player.id);
-
-
-        
 /*        
         // @todo review limit player create city
-
         let repWorld = await CityService.getRepository(World);
         let repProvince = await CityService.getRepository(Province);
         let repOwner = await CityService.getRepository(Npc);
-        
-
         let repPosition = await CityService.getRepository(Position);
 
         cityData.world = await repWorld.findOne( { where: { id: worldId } } );

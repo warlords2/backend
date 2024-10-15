@@ -31,6 +31,8 @@ services:
         extends:
             file: ../storage/docker-compose.yml
             service: database
+        ports:
+           - "5432:5432"
         volumes:
             - ../storage/db/postgresql:/var/lib/postgresql
         environment:
